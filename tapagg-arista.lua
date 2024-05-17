@@ -8,6 +8,7 @@
 Arista = Proto ("arista", "Arista Networks")
 local a_proto = DissectorTable.new("arista", "Arista Networks")
 TapaggTimestamp = Proto ("arista.tapaggtimestamp", "TapAgg Header Timestamp")
+TapaggTimestampSubtree = Proto ("arista.tapaggtimestampsubtree", "TapAgg Header Timestamp Parent")
 UnknownSubtype = Proto ("arista.unknown", "Unknown Subtype")
 -- Arista Registered Ethertype
 local arista_ethertype = 0xd28b
@@ -22,7 +23,10 @@ Arista.fields = { a_subtype }
 -- TapAgg Timestamp Header has a version number and a timestamp
 local t_version = ProtoField.uint16 ("arista.timestamp.version", "Version", base.HEX)
 local t_ts = ProtoField.absolute_time("arista.tapaggtimestamp.timestamp", "Timestamp")
+local t_seconds = ProtoField.uint32("arista.timestamp.seconds", "Seconds")
+local t_nanoseconds = ProtoField.uint32("arista.timestamp.nanoseconds", "Nanoseconds")
 TapaggTimestamp.fields = { t_version, t_ts }
+TapaggTimestampSubtree.fields = { t_seconds, t_nanoseconds }
 
 -- Dissector for the Arista EtherType
 function Arista.dissector(buf, packet, tree)
@@ -93,6 +97,8 @@ function TapaggTimestamp.dissector(buf, packet, tree)
     local time = NSTime.new(seconds, nanoseconds)
     buf_len = sec_len + 4
     local ts = t:add(t_ts, buf(2,buf_len), time)
+    ts:add(t_seconds, buf(1,4), seconds)
+    ts:add(t_nanoseconds, buf(1,4), nanoseconds)
     return buf_len + 2
 end
 
