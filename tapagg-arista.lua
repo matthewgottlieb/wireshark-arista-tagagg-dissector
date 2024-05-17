@@ -83,7 +83,7 @@ function TapaggTimestamp.dissector(buf, packet, tree)
     local nanoseconds = buf(ns_offset,4):uint()
     if Arista.prefs.timestamp_in_info then
         -- add the raw timestamp the info column
-        packet.cols.info:set("TapAgg Timestamp: " .. seconds.."."..nanoseconds .. " ")
+        packet.cols.info:set(string.format("TapAgg Timestamp: %d.%09d ", seconds, nanoseconds))
         packet.cols.info:fence()
     end
     -- in the packet tree view show the time as a string
