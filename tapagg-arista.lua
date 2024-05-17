@@ -6,6 +6,7 @@
 -- ------------------------------------------------------
 
 Arista = Proto ("arista", "Arista Networks")
+Arista.prefs.timestamp_in_info = Pref.bool("Show TapAgg Timestamp in Info column", true, "")
 local a_proto = DissectorTable.new("arista", "Arista Networks")
 TapaggTimestamp = Proto ("arista.tapaggtimestamp", "TapAgg Header Timestamp")
 UnknownSubtype = Proto ("arista.unknown", "Unknown Subtype")
@@ -80,9 +81,11 @@ function TapaggTimestamp.dissector(buf, packet, tree)
     -- 4 bytes for nanoseconds
     ns_offset = 2 + sec_len
     local nanoseconds = buf(ns_offset,4):uint()
-    -- add the raw timestamp the info column
-    packet.cols.info = "TapAgg Timestamp: " .. seconds.."."..nanoseconds .. " "
-    packet.cols.info:fence()
+    if Arista.prefs.timestamp_in_info then
+        -- add the raw timestamp the info column
+        packet.cols.info:set("TapAgg Timestamp: " .. seconds.."."..nanoseconds .. " ")
+        packet.cols.info:fence()
+    end
     -- in the packet tree view show the time as a string
     -- compensate 48b timestamp seconds with local time upper 16b
     if sec_len == 2 then
