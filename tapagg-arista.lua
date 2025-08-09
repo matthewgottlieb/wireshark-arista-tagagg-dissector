@@ -77,7 +77,7 @@ function TapaggTimestamp.dissector(buf, packet, tree)
     -- 48b timestamp has 2 bytes seconds
     version = buf(0,2):uint()
     -- reserve lower 4 bits in version field for hw info
-    version = bit32.band( version, 0xfff0 )
+    version = bit.band( version, 0xfff0 )
     if version == 0x20 then
        sec_len = 2
     end
@@ -94,7 +94,7 @@ function TapaggTimestamp.dissector(buf, packet, tree)
     -- compensate 48b timestamp seconds with local time upper 16b
     if sec_len == 2 then
      local packet_seconds, packet_ns = math.modf(packet.abs_ts)
-     local epoch_seconds = bit32.replace(packet_seconds, seconds, 0, 16)
+     local epoch_seconds = bit.replace(packet_seconds, seconds, 0, 16)
      seconds = epoch_seconds
     end
     local time = NSTime.new(seconds, nanoseconds)
